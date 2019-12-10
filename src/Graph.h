@@ -7,6 +7,8 @@
 
 #include <functional>
 #include <queue>
+#include <set>
+#include <tuple>
 #include <vector>
 
 namespace GraphENS
@@ -67,8 +69,7 @@ public:
     {
     }
 
-    void add_edge(vertex_t i, vertex_t j,
-                  edge_t weight = DataStructure::default_edge_weight)
+    void add_edge(vertex_t i, vertex_t j, edge_t weight = DataStructure::default_edge_weight)
     {
         std::function<bool(std::vector<int>)> f;
         data.add_edge(i, j);
@@ -79,11 +80,9 @@ public:
     // region algorithms
 
 private:
-    void depth_first_search_aux(
-        size_t start,
-        const std::function<void(const Graph<DataStructure> &, size_t)> &f,
-        const std::function<bool(size_t, const this_t &)> &continue_predicate,
-        std::vector<bool> &visited) const
+    void depth_first_search_aux(size_t start, const std::function<void(const Graph<DataStructure> &, size_t)> &f,
+                                const std::function<bool(size_t, const this_t &)> &continue_predicate,
+                                std::vector<bool> &visited) const
     {
         if (!visited.at(start))
         {
@@ -93,8 +92,7 @@ private:
             {
                 for (auto vertex : neighbours())
                 {
-                    depth_first_search_aux(vertex, f, continue_predicate,
-                                           visited);
+                    depth_first_search_aux(vertex, f, continue_predicate, visited);
                 }
             }
         }
@@ -102,20 +100,22 @@ private:
 
 public:
     void depth_first_search(
-        size_t start,
-        const std::function<void(const Graph<DataStructure> &, size_t)> &f,
-        const std::function<bool(size_t, const this_t &)> &continue_predicate)
+        size_t start, const std::function<void(const Graph<DataStructure> &, size_t)> &f,
+        const std::function<bool(size_t, const this_t &)> &continue_predicate = [](size_t, const this_t &) {
+            return true;
+        }) const
     {
         std::vector<bool> visited(size(), false);
         depth_first_search_aux(start, f, continue_predicate, visited);
     }
 
     void breadth_first_search(
-        size_t start,
-        const std::function<void(const Graph<DataStructure> &, size_t)> &f,
-        const std::function<bool(size_t, const this_t &)> &continue_predicate,
-        std::vector<bool> &visited) const
+        size_t start, const std::function<void(const Graph<DataStructure> &, size_t)> &f,
+        const std::function<bool(size_t, const this_t &)> &continue_predicate = [](size_t, const this_t &) {
+            return true;
+        }) const
     {
+        std::vector<bool> visited(size(), false);
         std::queue<size_t> queue;
         queue.push(start);
         while (!queue.empty())
@@ -133,6 +133,48 @@ public:
                 }
             }
         }
+    }
+
+private:
+    class q_elem : public std::tuple<size_t, const double &>
+    {
+        bool operator>(const q_elem &other)
+        {
+            return std::get<1>(*this) > std::get<1>(other);
+        }
+    };
+
+    template <
+        template <class T, class Container = std::vector<T>, class Compare = std::less<typename Container::value_type>>
+        typename PriorityQueue,
+        const std::function<double(const this_t &, size_t, size_t)> &distance>
+    std::vector<size_t> dijkstra(
+        size_t start, const std::function<bool(size_t, const this_t &)> &continue_predicate =
+                          [](size_t, const this_t &) { return true; }) const
+    {
+        PriorityQueue<q_elem, std::vector<q_elem>, std::greater<q_elem>> queue;
+        std::vector<size_t> predecessors(size(), -1);
+        std::vector<double> distances(size(), std::numeric_limits<double>::infinity());
+        distances.at(start) = 0;
+
+        for (size_t v = 0; v < size(); v++)
+        {
+            queue.push({v, distances.at(v)});
+        }
+        while (!queue.empty())
+        {
+            auto [vertex, _] = queue.pop();
+            for (auto v : neighbours(vertex))
+            {
+                double candidate_dist = distances[vertex] + distance(*this, vertex, v);
+                if (candidate_dist < distances[v])
+                {
+                    distances[v] = candidate_dist;
+                    predecessors[v] = vertex;
+                }
+            }
+        }
+        return predecessors;
     }
 
     // endregion
