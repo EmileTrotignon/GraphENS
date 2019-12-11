@@ -1,9 +1,21 @@
-//
-// Created by emile on 29/11/2019.
-//
+/*┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┯━ / ━━━━━━|━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓*/
+/*┃ <graph.h>                                          │ /\ /‾ /\ | /\ ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁*/
+/*┃                                                    │ \_ \_ \/ | \_ ▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔*/
+/*┃ <created by E.Trotignon and C.Devatine>            │                                                             ┃*/
+/*┃                                                    │              _  |                                           ┃*/
+/*┃ <date : 10/12/2019>                                │ |\ /\ |‾ |\\ _\ | /\ ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁*/
+/*┃                                                    │ || \/ |  ||| \| | \_ ▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔*/
+/*┃                                                    │                                                             ┃*/
+/*┃                                                    │  _        /    o                                            ┃*/
+/*┃                                                    │ /_ || |\ /\ |‾ | /\ || |‾ /\ ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁*/
+/*┃                                                    │ _/ \| |/ \_ |  | \_ \| |  \_ ▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔*/
+/*┃                                                    │       |                                                     ┃*/
+/*┃                                                    │    _     o  _       _ _     | _                             ┃*/
+/*┃                                                    │ |\ _\ |‾ | /_ ▁▁▁▁ /_ _\ /‾ | _\\  / ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁*/
+/*┃                                                    │ |/ \| |  | _/ ▔▔▔▔ _/ \| \_ | \| \/  ▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔*/
+/*┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┷━|━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ / ━━━━━━━━━━━━━━━━━━━━━━━━━┛*/
 
-#ifndef GRAPHENS_GRAPH_H
-#define GRAPHENS_GRAPH_H
+#pragma once
 
 #include <functional>
 #include <queue>
@@ -13,6 +25,7 @@
 
 namespace GraphENS
 {
+
 /*template<typename T>
 concept GraphDataStructure =
         requires (T t, size_t i, size_t j)
@@ -26,12 +39,12 @@ concept GraphDataStructure =
                 };
 
 */
-template <typename DataStructure> class Graph
+template <typename DataStructure> class graph
 {
     DataStructure data;
     using vertex_t = typename DataStructure::vertex_t;
     using edge_t = typename DataStructure::edge_t;
-    using this_t = Graph<DataStructure>;
+    using this_t = graph<DataStructure>;
 
 public:
     // region data structure access
@@ -80,7 +93,7 @@ public:
     // region algorithms
 
 private:
-    void depth_first_search_aux(size_t start, const std::function<void(const Graph<DataStructure> &, size_t)> &f,
+    void depth_first_search_aux(size_t start, const std::function<void(const graph<DataStructure> &, size_t)> &f,
                                 const std::function<bool(size_t, const this_t &)> &continue_predicate,
                                 std::vector<bool> &visited) const
     {
@@ -100,7 +113,7 @@ private:
 
 public:
     void depth_first_search(
-        size_t start, const std::function<void(const Graph<DataStructure> &, size_t)> &f,
+        size_t start, const std::function<void(const graph<DataStructure> &, size_t)> &f,
         const std::function<bool(size_t, const this_t &)> &continue_predicate = [](size_t, const this_t &) {
             return true;
         }) const
@@ -110,7 +123,7 @@ public:
     }
 
     void breadth_first_search(
-        size_t start, const std::function<void(const Graph<DataStructure> &, size_t)> &f,
+        size_t start, const std::function<void(const graph<DataStructure> &, size_t)> &f,
         const std::function<bool(size_t, const this_t &)> &continue_predicate = [](size_t, const this_t &) {
             return true;
         }) const
@@ -181,5 +194,3 @@ private:
 };
 
 } // namespace GraphENS
-
-#endif // GRAPHENS_GRAPH_H
