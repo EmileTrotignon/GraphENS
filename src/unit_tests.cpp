@@ -1,4 +1,4 @@
-#include "adjacency_list.h"
+#include "graph_adjacency_list.h"
 #include "graph.h"
 
 using namespace GraphENS;

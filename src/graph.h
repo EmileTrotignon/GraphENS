@@ -114,6 +114,7 @@ private:
     }
 
 public:
+	template<typename Graph_T>
     void depth_first_search(
         size_t start, const std::function<void(const graph<DataStructure> &, size_t)> &f,
         const std::function<bool(size_t, const this_t &)> &continue_predicate = [](size_t, const this_t &) {
