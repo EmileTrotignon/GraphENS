@@ -42,29 +42,31 @@ concept GraphDataStructure =
 template <typename DataStructure> class graph
 {
     DataStructure data;
+
     using vertex_t = typename DataStructure::vertex_t;
     using edge_t = typename DataStructure::edge_t;
     using this_t = graph<DataStructure>;
+    using neighbors_t = typename DataStructure::neighbours_t;
 
 public:
     // region data structure access
 
-    bool is_edge(size_t i, size_t j)
+    bool is_edge(size_t i, size_t j) const
     {
         return data.is_edge(i, j);
     }
 
-    edge_t edge_weight(size_t i, size_t j)
+    edge_t edge_weight(size_t i, size_t j) const
     {
         return data.edge_weight(i, j);
     }
 
-    std::vector<size_t> neighbours(size_t i)
+    const neighbors_t &neighbors(size_t i) const
     {
         return data.adjacency_list(i);
     }
 
-    size_t size()
+    size_t size() const
     {
         return data.size();
     }
@@ -93,19 +95,19 @@ public:
     // region algorithms
 
 private:
-    void depth_first_search_aux(size_t start, const std::function<void(const graph<DataStructure> &, size_t)> &f,
-                                const std::function<bool(size_t, const this_t &)> &continue_predicate,
+    void depth_first_search_aux(size_t prev, size_t start, const std::function<void(size_t, size_t, const this_t &)> &f,
+                                const std::function<bool(size_t, size_t, const this_t &)> &continue_predicate,
                                 std::vector<bool> &visited) const
     {
         if (!visited.at(start))
         {
             visited.at(start) = true;
-            f(*this, start);
-            if (continue_predicate(start, *this))
+            f(prev, start, *this);
+            if (continue_predicate(prev, start, *this))
             {
-                for (auto vertex : neighbours())
+                for (auto vertex : neighbors())
                 {
-                    depth_first_search_aux(vertex, f, continue_predicate, visited);
+                    depth_first_search_aux(start, vertex, f, continue_predicate, visited);
                 }
             }
         }
@@ -119,29 +121,29 @@ public:
         }) const
     {
         std::vector<bool> visited(size(), false);
-        depth_first_search_aux(start, f, continue_predicate, visited);
+        depth_first_search_aux(start, start, f, continue_predicate, visited);
     }
 
     void breadth_first_search(
-        size_t start, const std::function<void(const graph<DataStructure> &, size_t)> &f,
-        const std::function<bool(size_t, const this_t &)> &continue_predicate = [](size_t, const this_t &) {
-            return true;
-        }) const
+        size_t prev, size_t start, const std::function<void(size_t, size_t, const this_t &)> &f,
+        const std::function<bool(size_t, size_t, const this_t &)> &continue_predicate =
+            [](size_t, size_t, const this_t &) { return true; }) const
     {
         std::vector<bool> visited(size(), false);
-        std::queue<size_t> queue;
-        queue.push(start);
+        std::queue<std::tuple<size_t, size_t>> queue;
+        queue.push({start, start});
         while (!queue.empty())
         {
-            size_t vertex = queue.front();
+            auto [prev, vertex] = queue.front();
+            f(prev, vertex, *this);
             visited.at(vertex) = true;
-            if (continue_predicate(vertex, *this))
+            if (continue_predicate(prev, vertex, *this))
             {
-                for (auto v : neighbours(vertex))
+                for (auto v : neighbors(vertex))
                 {
                     if (!visited.at(vertex))
                     {
-                        queue.push(v);
+                        queue.push({vertex, v});
                     }
                 }
             }
@@ -157,6 +159,7 @@ private:
         }
     };
 
+public:
     template <
         template <class T, class Container = std::vector<T>, class Compare = std::less<typename Container::value_type>>
         typename PriorityQueue,
@@ -177,7 +180,7 @@ private:
         while (!queue.empty())
         {
             auto [vertex, _] = queue.pop();
-            for (auto v : neighbours(vertex))
+            for (auto v : neighbors(vertex))
             {
                 double candidate_dist = distances[vertex] + distance(*this, vertex, v);
                 if (candidate_dist < distances[v])
@@ -190,7 +193,13 @@ private:
         return predecessors;
     }
 
+    std::vector<std::vector<size_t>> tarjan()
+    {
+
+    }
+
     // endregion
+
 };
 
 } // namespace GraphENS
